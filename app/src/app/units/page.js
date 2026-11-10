@@ -34,7 +34,7 @@ export default async function UnitsPage({ searchParams }) {
         <tbody>{units.map((u) => (
           <tr key={u.id}>
             <td><b>{u.code}</b></td><td>{u.cluster}</td><td>{u.type}</td>
-            <td>{u.landArea} / {u.buildingArea} m²</td>
+            <td style={{ whiteSpace: 'nowrap' }}>{u.landArea} / {u.buildingArea} m²</td>
             <td>
               {u.bookedByCustomerId && u.status !== 'soldout'
                 ? <span className="badge hangat">Dipesan #{u.bookedByCustomerId}</span>

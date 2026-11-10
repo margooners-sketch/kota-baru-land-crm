@@ -37,7 +37,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
   return (
     <div>
       <p><a href="/customers">← Daftar Pelanggan</a></p>
-      <h1>{c.name} <span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></h1>
+      <h1>{c.name} <span className={'badge ' + s.label.toLowerCase()}>{`${s.label} ${s.score}`}</span></h1>
       <p className="muted">HP {waDisplay(c.phone)} · Kontak {formatDateId(c.contactDate)} · Sumber: {c.sourceSpot || '—'} · {c.gender === 'laki_laki' ? 'Laki-laki' : c.gender === 'perempuan' ? 'Perempuan' : 'Jenis kelamin belum diisi'}</p>
 
       <div className="tabs">

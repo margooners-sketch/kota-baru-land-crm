@@ -32,7 +32,7 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1>Selamat pagi, {user.name} 👋</h1>
+      <h1>Selamat pagi, {user.name}</h1>
       <p className="muted">{formatDateId(today)} — Target closing bulan ini: {closing}/{target}</p>
 
       <div className="grid">
@@ -58,7 +58,7 @@ export default async function DashboardPage() {
               <td><a href={'/customers/' + c.id}>{c.name}</a><br /><span className="muted">{c.phone}</span></td>
               <td>{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</td>
               <td>{formatDateId(c.followUpDate)}{c.followUpDate < today ? ' (lewat)' : ' (hari ini)'}</td>
-              <td><span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></td>
+              <td><span className={'badge ' + s.label.toLowerCase()}>{`${s.label} ${s.score}`}</span></td>
               <td><a className="wa" href={waLink(c.phone, WA_TEMPLATES.followup(c))} target="_blank" rel="noreferrer">WA Bisnis</a></td>
             </tr>;
           })}</tbody>
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
               <td><a href={'/customers/' + c.id}>{c.name}</a><br /><span className="muted">{c.phone}</span></td>
               <td>{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</td>
               <td>{c.followUpDate ? 'Follow-up ' + formatDateId(c.followUpDate) : 'Kontak ' + formatDateId(c.contactDate)}</td>
-              <td><span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></td>
+              <td><span className={'badge ' + s.label.toLowerCase()}>{`${s.label} ${s.score}`}</span></td>
               <td><a className="wa" href={waLink(c.phone, WA_TEMPLATES.followup(c))} target="_blank" rel="noreferrer">WA Bisnis</a></td>
             </tr>;
           })}</tbody>
@@ -92,7 +92,7 @@ export default async function DashboardPage() {
           ))}
         </div>
         <div className="card" style={{ flex: 1 }}>
-          <h3>📅 Follow-up berikutnya</h3>
+          <h3>Follow-up berikutnya</h3>
           {upcoming.length === 0 ? <p className="muted">Belum ada jadwal.</p> : upcoming.map((c) => (
             <p key={c.id}><a href={'/customers/' + c.id}>{c.name}</a> — {formatDateId(c.followUpDate)}</p>
           ))}
@@ -103,7 +103,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <h2>📣 Flyering terakhir</h2>
+      <h2>Flyering terakhir</h2>
       <div className="card"><table>
         <thead><tr><th>Tanggal</th><th>Spot</th><th>Brosur</th><th>Jam</th><th>Tanya kontak</th></tr></thead>
         <tbody>{flyering.map((f) => (

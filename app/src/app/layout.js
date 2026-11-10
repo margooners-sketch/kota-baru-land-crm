@@ -67,7 +67,7 @@ export default async function RootLayout({ children }) {
           .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line-strong)}
           .btn.ghost:hover{background:#f4f4f1}
           .btn.danger{background:var(--red)}
-          .badge{display:inline-block;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--green-soft);color:var(--green)}
+          .badge{display:inline-block;white-space:nowrap;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--green-soft);color:var(--green)}
           .badge.panas{background:var(--red-bg);color:var(--red)} .badge.hangat{background:var(--amber-bg);color:var(--amber-ink)} .badge.dingin{background:var(--blue-bg);color:var(--blue-ink)}
           .badge.promo{background:var(--amber-bg);color:var(--amber-ink)} .badge.sold{background:var(--red-bg);color:var(--red)}
           .badge.special{background:var(--red);color:#fff;font-weight:700}
