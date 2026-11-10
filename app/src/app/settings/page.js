@@ -70,7 +70,7 @@ export default async function SettingsPage({ searchParams }) {
             <tr key={a.id}>
               <td>{a.username}</td><td>{a.name}</td><td>{a.role}</td><td>{a.area || '—'}</td><td>{a.active ? 'Aktif' : 'Nonaktif'}</td>
               <td style={{ whiteSpace: 'nowrap' }}>
-                {a.id !== user.id && <><a href={'/settings?editAccount=' + a.id}>Ubah</a>{' · '}</>}
+                <a href={'/settings?editAccount=' + a.id}>Ubah</a>{' · '}
                 {a.id !== user.id && (
                   <form action={async () => { 'use server'; await setAccountActive(a.id, !a.active); }} style={{ display: 'inline' }}>
                     <button className="btn small ghost" type="submit">{a.active ? 'Nonaktifkan' : 'Aktifkan'}</button>
@@ -82,18 +82,23 @@ export default async function SettingsPage({ searchParams }) {
 
           {editAccount && (
             <>
-              <h3>Ubah Akun — {editAccount.username}</h3>
+              <h3>Ubah Akun — {editAccount.username}{editAccount.id === user.id ? ' (akun sendiri)' : ''}</h3>
+              {editAccount.id === user.id && (
+                <p className="muted">Akun sendiri: nama, area, dan no. HP bisa diubah. Peran dan status dikunci supaya tidak mengunci diri sendiri.</p>
+              )}
               <form action={updateAccount.bind(null, editAccount.id)}>
                 <div className="row">
                   <div><label>Nama</label><input name="name" defaultValue={editAccount.name} required /></div>
-                  <div><label>Peran</label><select name="role" defaultValue={editAccount.role}><option value="staff">Staff</option><option value="manager">Manager</option><option value="owner">Owner</option></select></div>
+                  <div><label>Peran</label><select name="role" defaultValue={editAccount.role} disabled={editAccount.id === user.id}><option value="staff">Staff</option><option value="manager">Manager</option><option value="owner">Owner</option></select></div>
                   <div><label>Area</label><input name="area" defaultValue={editAccount.area || ''} /></div>
                   <div><label>No. HP</label><input name="phone" defaultValue={editAccount.phone || ''} /></div>
                 </div>
-                <label><input type="checkbox" name="active" value="1" defaultChecked={editAccount.active} /> Akun aktif</label>
+                <label><input type="checkbox" name="active" value="1" defaultChecked={editAccount.active} disabled={editAccount.id === user.id} /> Akun aktif</label>
                 <input type="hidden" name="active" value="" />
                 <div style={{ marginTop: 10 }}><button className="btn" type="submit">Simpan Akun</button> <a className="btn ghost" href="/settings">Batal</a></div>
               </form>
+              {editAccount.id !== user.id && (
+                <>
               <h3>Reset Password — {editAccount.username}</h3>
               <form action={resetAccountPassword.bind(null, editAccount.id)}>
                 <div className="row">
@@ -105,6 +110,8 @@ export default async function SettingsPage({ searchParams }) {
                 <label><input type="checkbox" required /> Saya paham akun {editAccount.username} akan dihapus permanen.</label>
                 <div style={{ marginTop: 10 }}><button className="btn danger" type="submit">Hapus Akun Ini</button></div>
               </form>
+                </>
+              )}
             </>
           )}
 

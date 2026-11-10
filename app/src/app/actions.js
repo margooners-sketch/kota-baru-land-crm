@@ -506,15 +506,18 @@ export async function setAccountActive(id, active) {
   return { ok: true };
 }
 
-// Ubah data akun (nama/peran/area/no. HP/status). Akun sendiri tidak boleh
-// diubah peran/statusnya lewat sini (pakai Ganti Password untuk password).
+// Ubah data akun (nama/peran/area/no. HP/status). Akun sendiri BOLEH diubah
+// nama/area/no. HP-nya, tapi peran & statusnya DIKUNCI (dipaksa ke nilai
+// yang sudah ada) supaya pemilik akun tidak mengunci diri sendiri
+// (mis. menurunkan peran owner atau menonaktifkan akun sendiri).
+// Password sendiri tetap lewat Ganti Password.
 export async function updateAccount(id, formData) {
   const user = await mustManager();
   const acc = await get('SELECT * FROM accounts WHERE id = ?', [id]);
   if (!acc) return { error: 'Akun tidak ditemukan.' };
-  if (Number(id) === user.id) redirect('/settings?err=' + encodeURIComponent('Akun sendiri tidak bisa diubah lewat sini.'));
-  const role = String(formData.get('role') || acc.role);
-  const active = formData.get('active') ? 1 : 0;
+  const isSelf = Number(id) === user.id;
+  const role = isSelf ? acc.role : String(formData.get('role') || acc.role);
+  const active = isSelf ? acc.active : (formData.get('active') ? 1 : 0);
   await run('UPDATE accounts SET name = ?, role = ?, area = ?, phone = ?, active = ? WHERE id = ?',
     [String(formData.get('name') || '').trim() || acc.name, role,
      String(formData.get('area') || '').trim() || null,
