@@ -1,0 +1,22 @@
+{
+  "name": "kota-baru-land-crm",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CRM Marketing Property Kota Baru Land (Taman Melati Bulan) — rebuild mandiri dari dashboard Muse",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:setup": "node scripts/setup-db.mjs",
+    "db:seed": "node scripts/seed.mjs"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "next": "^15.1.0",
+    "pdf-lib": "^1.17.1",
+    "pg": "^8.23.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
