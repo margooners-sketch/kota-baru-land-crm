@@ -1,6 +1,6 @@
 import { requireUser } from '@/lib/auth';
 import { all, get, getSetting, mapCustomer, mapUnit } from '@/lib/db';
-import { leadScore, STAGE_LABELS, waLink, WA_TEMPLATES } from '@/lib/pricing';
+import { leadScore, STAGES, STAGE_LABELS, waLink, WA_TEMPLATES } from '@/lib/pricing';
 import { formatDateId, unitStatusLabel } from '@/lib/utils';
 
 export default async function DashboardPage() {
@@ -29,6 +29,30 @@ export default async function DashboardPage() {
     (c.followUpDate && c.followUpDate <= sevenAgoStr) ||
     (!c.followUpDate && c.contactDate && c.contactDate <= sevenAgoStr)
   )).sort((a, b) => ((a.followUpDate || a.contactDate) < (b.followUpDate || b.contactDate) ? -1 : 1));
+
+  // Tren closing 6 bulan terakhir (dari units.closed_at) + corong konversi.
+  const monthKeys = [];
+  {
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - i, 1));
+      monthKeys.push(d.toISOString().slice(0, 7));
+    }
+  }
+  const closingByMonth = {};
+  for (const u of units) {
+    if (u.closedAt) {
+      const m = String(u.closedAt).slice(0, 7);
+      closingByMonth[m] = (closingByMonth[m] || 0) + 1;
+    }
+  }
+  const monthLabel = (ym) => {
+    const [y, m] = ym.split('-').map(Number);
+    return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('id-ID', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  };
+  const maxClosing = Math.max(1, ...monthKeys.map((m) => closingByMonth[m] || 0));
+  const funnel = STAGES.map((s) => ({ label: s.label, n: customers.filter((c) => c.stages.includes(s.key)).length }));
+  const maxFunnel = Math.max(1, ...funnel.map((f) => f.n));
 
   return (
     <div>
@@ -100,6 +124,27 @@ export default async function DashboardPage() {
           {noReply.slice(0, 5).map((c) => (
             <p key={c.id}><a href={'/customers/' + c.id}>{c.name}</a> <span className="muted">— {c.followUpResult}</span></p>
           ))}
+        </div>
+      </div>
+
+      <div className="row">
+        <div className="card" style={{ flex: 1 }}>
+          <h3>Tren Closing — 6 bulan terakhir</h3>
+          <table><thead><tr><th>Bulan</th><th>Closing</th><th></th></tr></thead>
+          <tbody>{monthKeys.map((m) => (
+            <tr key={m}><td>{monthLabel(m)}</td><td>{closingByMonth[m] || 0}</td>
+            <td style={{ width: '55%' }}><div style={{ background: 'var(--green)', height: 10, borderRadius: 5, width: Math.round(((closingByMonth[m] || 0) / maxClosing) * 100) + '%' }} /></td></tr>
+          ))}</tbody></table>
+          <p className="muted">Dihitung dari unit yang closing (Akad) per bulan.</p>
+        </div>
+        <div className="card" style={{ flex: 1 }}>
+          <h3>Corong Konversi</h3>
+          <table><thead><tr><th>Tahap</th><th>Pelanggan</th><th></th></tr></thead>
+          <tbody>{funnel.map((f) => (
+            <tr key={f.label}><td>{f.label}</td><td>{f.n}</td>
+            <td style={{ width: '55%' }}><div style={{ background: 'var(--green)', height: 10, borderRadius: 5, width: Math.round((f.n / maxFunnel) * 100) + '%' }} /></td></tr>
+          ))}</tbody></table>
+          <p className="muted">Jumlah pelanggan yang sudah mencapai tiap tahap (kumulatif).</p>
         </div>
       </div>
 

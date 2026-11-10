@@ -115,8 +115,15 @@ export function mapCustomer(r) {
   if (!r) return null;
   let stages = [];
   try { stages = JSON.parse(r.stages || '[]'); } catch { stages = []; }
-  let checklist = [];
-  try { checklist = JSON.parse(r.checklist || '[]'); } catch { checklist = []; }
+  // Checklist berkas: format baru objek {kunci: 'soft'|'hard'} (3 keadaan).
+  // Format lama array JSON (hanya centang ya/tidak) tetap terbaca — item lama
+  // yang tercentang dianggap 'soft' (Soft File).
+  let checklist = {};
+  try {
+    const raw = JSON.parse(r.checklist || '[]');
+    if (Array.isArray(raw)) { for (const k of raw) checklist[k] = 'soft'; }
+    else if (raw && typeof raw === 'object') checklist = raw;
+  } catch { checklist = {}; }
   return { id: r.id, name: r.name, phone: r.phone, gender: r.gender, sourceSpot: r.source_spot, contactDate: r.contact_date, flyeringDate: r.flyering_date, stages, status: r.status, followUpDate: r.follow_up_date, followUpActualDate: r.follow_up_actual_date, followUpResult: r.follow_up_result, notes: r.notes, certificateChoice: r.certificate_choice, hasHeldUnit: !!r.has_held_unit, isSimulation: !!r.is_simulation, incomplete: !!r.incomplete, isReminder: !!r.is_reminder, urgency: r.urgency, bookingDate: r.booking_date, dpDueDate: r.dp_due_date, berkasDueDate: r.berkas_due_date, procedureSigned: !!r.procedure_signed, procedureSignedDate: r.procedure_signed_date, shortfallPaid: !!r.shortfall_paid, shortfallPaidDate: r.shortfall_paid_date, checklist };
 }
 export function mapFlyering(r) {

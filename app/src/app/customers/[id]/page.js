@@ -1,10 +1,16 @@
 import { notFound } from 'next/navigation';
 import { requireUser } from '@/lib/auth';
 import { get, all, mapCustomer, mapUnit } from '@/lib/db';
-import { updateCustomer, updateStages, cancelBooking, toggleChecklist } from '@/app/actions';
+import { updateCustomer, updateStages, cancelBooking, setChecklistItem, addDocument, deleteDocument, deleteCustomer } from '@/app/actions';
 import { STAGES, STAGE_LABELS, calcPrice, priceScheme, greeting, waLink, WA_TEMPLATES, OBJECTION_TEMPLATES, CHECKLIST_GROUPS, leadScore, rupiah } from '@/lib/pricing';
-import { formatDateId, waDisplay } from '@/lib/utils';
+import { formatDateId, waDisplay, todayId } from '@/lib/utils';
 import AcuanBrosur from '@/app/acuan-brosur';
+
+const CHECKLIST_STATES = [
+  { key: 'belum', label: 'Belum', next: 'soft' },
+  { key: 'soft', label: '✓ Soft File', next: 'hard' },
+  { key: 'hard', label: 'Hardfile', next: 'belum' },
+];
 
 const TABS = [
   { key: 'pipeline', label: 'Pipeline & WA' },
@@ -33,10 +39,15 @@ export default async function CustomerDetailPage({ params, searchParams }) {
   const stageAction = updateStages.bind(null, c.id);
   const cancelAction = cancelBooking.bind(null, c.id);
   const saveAction = updateCustomer.bind(null, c.id);
+  const addDocAction = addDocument.bind(null, c.id);
+  const deleteAction = deleteCustomer.bind(null, c.id);
+  const docs = await all('SELECT d.*, (CASE WHEN f.document_id IS NOT NULL THEN 1 ELSE 0 END) AS has_file FROM customer_documents d LEFT JOIN customer_document_files f ON f.document_id = d.id WHERE d.customer_id = ? ORDER BY d.received_at DESC, d.id DESC', [c.id]);
 
   return (
     <div>
       <p><a href="/customers">← Daftar Pelanggan</a></p>
+      {sp?.err && <div className="err">{sp.err}</div>}
+      {sp?.msg && <div className="ok">{sp.msg}</div>}
       <h1>{c.name} <span className={'badge ' + s.label.toLowerCase()}>{`${s.label} ${s.score}`}</span></h1>
       <p className="muted">HP {waDisplay(c.phone)} · Kontak {formatDateId(c.contactDate)} · Sumber: {c.sourceSpot || '—'} · {c.gender === 'laki_laki' ? 'Laki-laki' : c.gender === 'perempuan' ? 'Perempuan' : 'Jenis kelamin belum diisi'}</p>
 
@@ -74,7 +85,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
                     </select>
                   </div>
                 </div>
-                <p className="muted">Centang <b>Booking</b> + pilih unit = unit terkunci atas nama pelanggan ini. Centang <b>Akad</b> = closing, unit jadi Sold Out. Berkas bersifat opsional, tidak mengunci.</p>
+                <p className="muted">Aturan urutan: Booking wajib sudah Minat, Survei, dan Lolos BI Checking. Akad wajib sudah Berkas, Bank/KPR, SP3K, dan kekurangan bayar lunas. Serah Terima dan Naik SHM wajib Akad dulu. Bila Booking disimpan, DP &amp; berkas jatuh tempo terisi otomatis = tanggal booking + 14 hari (bila masih kosong). Berkas bersifat opsional, tidak mengunci.</p>
                 <button className="btn" type="submit">Simpan Tahap</button>
                 {bookedUnit && user.role === 'owner' && (
                   <span style={{ marginLeft: 10 }}><button className="btn danger" type="submit" formAction={cancelAction}>Batalkan Booking/Closing (Owner)</button></span>
@@ -137,28 +148,87 @@ export default async function CustomerDetailPage({ params, searchParams }) {
       )}
 
       {tab === 'berkas' && (
-        <div className="row">
-          <div className="card" style={{ flex: 1 }}>
-            <h2>Checklist Berkas (opsional)</h2>
-            <p className="muted">Berkas tidak mengunci tahap Berkas maupun Closing.</p>
-            {CHECKLIST_GROUPS.map((g) => (
-              <div key={g.key}>
-                <h3>{g.label}</h3>
-                {g.items.map((item) => {
-                  const key = g.key + ':' + item;
-                  const checked = c.checklist.includes(key);
-                  return (
-                    <form key={key} action={async () => { 'use server'; await toggleChecklist(c.id, key, !checked); }} style={{ margin: '4px 0' }}>
-                      <button type="submit" style={{ background: 'none', border: '1px solid #c8d2c6', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-                        {checked ? '✓ ' : ''}{item}
-                      </button>
-                    </form>
-                  );
-                })}
-              </div>
-            ))}
+        <>
+          <div className="row">
+            <div className="card" style={{ flex: 1 }}>
+              <h2>Checklist Berkas (opsional)</h2>
+              <p className="muted">Berkas tidak mengunci tahap Berkas maupun Closing. Klik status untuk mengganti: Belum → Soft File → Hardfile → Belum. Lampirkan file untuk menandai Soft File sekaligus.</p>
+              {CHECKLIST_GROUPS.map((g) => (
+                <div key={g.key}>
+                  <h3>{g.label}</h3>
+                  {g.items.map((item) => {
+                    const key = g.key + ':' + item;
+                    const state = c.checklist[key] || 'belum';
+                    const cur = CHECKLIST_STATES.find((s) => s.key === state);
+                    return (
+                      <div key={key} style={{ display: 'flex', gap: 8, alignItems: 'center', margin: '4px 0' }}>
+                        <form action={async () => { 'use server'; await setChecklistItem(c.id, key, cur.next); }} style={{ flex: 1 }}>
+                          <button type="submit" title={'Status: ' + cur.label + ' — klik untuk ubah'} style={{ background: state === 'belum' ? '#fff' : state === 'soft' ? '#eef5ef' : '#fdf6e3', border: '1px solid #c8d2c6', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
+                            <b>[{cur.label}]</b> {item}
+                          </button>
+                        </form>
+                        <form action={addDocAction} style={{ flexShrink: 0 }}>
+                          <input type="hidden" name="kind" value={key} />
+                          <input type="hidden" name="doc_type" value="soft" />
+                          <input type="file" name="file" accept="application/pdf,image/*" required style={{ width: 180, padding: '4px 6px' }} />
+                          <button className="btn small ghost" type="submit" style={{ marginLeft: 4 }}>Lampirkan</button>
+                        </form>
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+
+          <div className="row">
+            <div className="card" style={{ flex: 1 }}>
+              <h2>Tambah Berkas</h2>
+              <form action={addDocAction}>
+                <div className="row">
+                  <div><label>Jenis berkas *</label>
+                    <input name="kind" list="checklist-kinds" required placeholder="pilih dari daftar atau ketik sendiri" />
+                    <datalist id="checklist-kinds">
+                      {CHECKLIST_GROUPS.map((g) => g.items.map((item) => (
+                        <option key={g.key + ':' + item} value={g.key + ':' + item}>{g.label} — {item}</option>
+                      )))}
+                    </datalist>
+                  </div>
+                  <div><label>Tipe</label>
+                    <select name="doc_type"><option value="soft">Soft File (unggah)</option><option value="hard">Hardfile (fisik)</option></select>
+                  </div>
+                  <div><label>Tanggal terima</label><input name="received_at" type="date" defaultValue={todayId()} /></div>
+                </div>
+                <div className="row">
+                  <div><label>File (PDF/gambar, maks 10 MB — wajib bila Soft File)</label><input type="file" name="file" accept="application/pdf,image/*" /></div>
+                  <div><label>Catatan</label><input name="notes" placeholder="mis. diterima di kantor" /></div>
+                </div>
+                <p className="muted">Bila jenis berkas cocok dengan item checklist di atas, item itu sekaligus ditandai diterima.</p>
+                <div style={{ marginTop: 10 }}><button className="btn" type="submit">Simpan Berkas</button></div>
+              </form>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2>Daftar Berkas ({docs.length})</h2>
+            {docs.length === 0 ? <p className="muted">Belum ada berkas tercatat.</p> : (
+              <table><thead><tr><th>Jenis</th><th>Nama file</th><th>Diterima</th><th>Tipe</th><th>Catatan</th><th></th></tr></thead>
+              <tbody>{docs.map((d) => (
+                <tr key={d.id}>
+                  <td>{d.kind}</td><td>{d.file_name || '—'}</td><td>{formatDateId(d.received_at)}</td>
+                  <td>{d.hardfile ? 'Hardfile' : 'Soft File'}</td><td className="muted">{d.notes || '—'}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    {d.has_file ? <a href={'/api/documents/' + d.id} target="_blank" rel="noreferrer">Lihat</a> : <span className="muted">—</span>}
+                    {' '}
+                    <form action={async () => { 'use server'; await deleteDocument(d.id, c.id); }} style={{ display: 'inline' }}>
+                      <button className="btn small ghost" type="submit">Hapus</button>
+                    </form>
+                  </td>
+                </tr>
+              ))}</tbody></table>
+            )}
+          </div>
+        </>
       )}
 
       {tab === 'acuan' && <AcuanBrosur />}
@@ -181,6 +251,19 @@ export default async function CustomerDetailPage({ params, searchParams }) {
             <div><label>DP jatuh tempo</label><input name="dp_due_date" type="date" defaultValue={c.dpDueDate || ''} /></div>
             <div><label>Berkas jatuh tempo</label><input name="berkas_due_date" type="date" defaultValue={c.berkasDueDate || ''} /></div>
           </div>
+          <div className="row">
+            <div>
+              <label><input type="checkbox" name="procedure_signed" value="1" defaultChecked={c.procedureSigned} /> Prosedur pembelian ditandatangani</label>
+              <input type="hidden" name="procedure_signed" value="" />
+              {c.procedureSignedDate && <span className="muted"> — {formatDateId(c.procedureSignedDate)}</span>}
+            </div>
+            <div>
+              <label><input type="checkbox" name="shortfall_paid" value="1" defaultChecked={c.shortfallPaid} /> Kekurangan bayar lunas</label>
+              <input type="hidden" name="shortfall_paid" value="" />
+              {c.shortfallPaidDate && <span className="muted"> — {formatDateId(c.shortfallPaidDate)}</span>}
+              <p className="muted">Wajib dicentang sebelum tahap Akad bisa disimpan.</p>
+            </div>
+          </div>
           <label>Hasil follow-up terakhir</label>
           <input name="follow_up_result" defaultValue={c.followUpResult || ''} placeholder="mis. Belum ada respon lebih lanjut" />
           <label>Catatan</label>
@@ -188,6 +271,17 @@ export default async function CustomerDetailPage({ params, searchParams }) {
           <div style={{ marginTop: 10 }}><button className="btn" type="submit">Simpan Data</button></div>
         </form>
       </div>
+
+      {user.role === 'owner' && (
+        <div className="card" style={{ borderColor: '#c0392b' }}>
+          <h2 style={{ color: '#8f1d1d' }}>Hapus Pelanggan</h2>
+          <p className="muted">Menghapus pelanggan ini secara permanen, termasuk berkasnya. Unit yang dipegang dilepas ke status semula. Entri buku tamu yang tertaut tetap ada di Buku Tamu.</p>
+          <form action={deleteAction}>
+            <label><input type="checkbox" required /> Saya paham pelanggan ini akan dihapus permanen.</label>
+            <div style={{ marginTop: 10 }}><button className="btn danger" type="submit">Hapus Pelanggan</button></div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }

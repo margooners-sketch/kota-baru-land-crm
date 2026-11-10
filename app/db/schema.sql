@@ -64,6 +64,15 @@ CREATE TABLE IF NOT EXISTS customer_documents (
   notes TEXT
 );
 
+-- Isi file soft copy berkas (dipisah dari customer_documents supaya tabel lama
+-- yang sudah ada di produksi tidak perlu diubah kolomnya; dibuat 10 Nov 2026).
+CREATE TABLE IF NOT EXISTS customer_document_files (
+  document_id INTEGER PRIMARY KEY REFERENCES customer_documents(id) ON DELETE CASCADE,
+  mime_type TEXT,
+  file_size INTEGER NOT NULL DEFAULT 0,
+  file_data BLOB
+);
+
 CREATE TABLE IF NOT EXISTS units (
   id INTEGER PRIMARY KEY,
   code TEXT UNIQUE NOT NULL,

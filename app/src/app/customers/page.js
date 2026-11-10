@@ -15,6 +15,8 @@ export default async function CustomersPage({ searchParams }) {
   return (
     <div>
       <h1>Daftar Pelanggan ({customers.length})</h1>
+      {sp?.err && <div className="err">{sp.err}</div>}
+      {sp?.msg && <div className="ok">{sp.msg}</div>}
       <form method="get" className="row">
         <div><label>Cari nama / HP / sumber</label><input name="q" defaultValue={sp?.q || ''} /></div>
         <div style={{ alignSelf: 'end' }}><button className="btn" type="submit">Cari</button></div>
