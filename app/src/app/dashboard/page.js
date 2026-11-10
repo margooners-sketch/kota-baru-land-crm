@@ -46,7 +46,7 @@ export default async function DashboardPage() {
         <div className="stat"><b>{closing}/{target}</b><span>Closing bulan ini</span></div>
       </div>
 
-      <h2>☀️ Briefing Pagi — Follow-up jatuh tempo ({due.length})</h2>
+      <h2>Briefing Pagi — Follow-up jatuh tempo ({due.length})</h2>
       {due.length === 0 ? (
         <div className="card">Tidak ada follow-up jatuh tempo hari ini. 🎉</div>
       ) : (
@@ -65,7 +65,7 @@ export default async function DashboardPage() {
         </table></div>
       )}
 
-      <h2>⚠️ Perlu Dicek — macet &gt;7 hari ({stalled.length})</h2>
+      <h2>Perlu Dicek — macet &gt;7 hari ({stalled.length})</h2>
       {stalled.length === 0 ? (
         <div className="card">Tidak ada pelanggan yang macet. 🎉</div>
       ) : (
@@ -86,7 +86,7 @@ export default async function DashboardPage() {
 
       <div className="row">
         <div className="card" style={{ flex: 1 }}>
-          <h3>🔥 Leads terpanas</h3>
+          <h3>Leads terpanas</h3>
           {scored.slice(0, 5).map(({ c, score, label }) => (
             <p key={c.id}><a href={'/customers/' + c.id}>{c.name}</a> — <span className={'badge ' + label.toLowerCase()}>{label} {score}</span> <span className="muted">{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</span></p>
           ))}
@@ -96,7 +96,7 @@ export default async function DashboardPage() {
           {upcoming.length === 0 ? <p className="muted">Belum ada jadwal.</p> : upcoming.map((c) => (
             <p key={c.id}><a href={'/customers/' + c.id}>{c.name}</a> — {formatDateId(c.followUpDate)}</p>
           ))}
-          <h3>🔕 Belum dibalas ({noReply.length})</h3>
+          <h3>Belum dibalas ({noReply.length})</h3>
           {noReply.slice(0, 5).map((c) => (
             <p key={c.id}><a href={'/customers/' + c.id}>{c.name}</a> <span className="muted">— {c.followUpResult}</span></p>
           ))}

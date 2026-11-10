@@ -75,7 +75,7 @@ export default async function SettingsPage({ searchParams }) {
 
       {user.role === 'owner' && (
         <div className="card" style={{ borderColor: '#c0392b' }}>
-          <h2 style={{ color: '#8f1d1d' }}>⚠️ Zona Berbahaya — Reset Pelanggan/Transaksi</h2>
+          <h2 style={{ color: '#8f1d1d' }}>Zona Berbahaya — Reset Pelanggan/Transaksi</h2>
           <p className="muted">Menghapus SEMUA pelanggan, buku tamu, dan catatan flyering. Unit & master unit TIDAK direset (booking dilepas). Tindakan ini permanen.</p>
           <form action={async () => { 'use server'; await resetCustomers(); }}>
             <label><input type="checkbox" required /> Saya paham ini menghapus semua data pelanggan & transaksi secara permanen.</label>

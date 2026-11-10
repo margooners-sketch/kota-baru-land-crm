@@ -30,7 +30,7 @@ export default async function CustomersPage({ searchParams }) {
             <td>{c.phone}</td>
             <td>{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</td>
             <td><span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></td>
-            <td>{c.followUpDate ? formatDateId(c.followUpDate) + (c.followUpDate < today ? ' ⚠️' : '') : '—'}<br /><span className="muted">{u.label}</span></td>
+            <td>{c.followUpDate ? formatDateId(c.followUpDate) : '—'}<br /><span className="muted">{u.label}</span></td>
             <td>{c.sourceSpot || '—'}</td>
           </tr>;
         })}</tbody>

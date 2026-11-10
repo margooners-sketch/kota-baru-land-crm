@@ -28,7 +28,7 @@ export default function ShareButton({ href, filename, label }) {
   }
   return (
     <button className="btn ghost" type="button" onClick={share} disabled={busy}>
-      {busy ? 'Menyiapkan…' : (label || '📤 Bagikan PDF')}
+      {busy ? 'Menyiapkan…' : (label || 'Bagikan PDF')}
     </button>
   );
 }

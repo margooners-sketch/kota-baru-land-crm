@@ -105,7 +105,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
 
           <div className="row">
             <div className="card" style={{ flex: 1 }}>
-              <h2>🧮 Kalkulator Harga</h2>
+              <h2>Kalkulator Harga</h2>
               <form method="get">
                 <input type="hidden" name="tab" value="pipeline" />
                 <label>Unit</label>
@@ -139,7 +139,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
       {tab === 'berkas' && (
         <div className="row">
           <div className="card" style={{ flex: 1 }}>
-            <h2>📋 Checklist Berkas (opsional)</h2>
+            <h2>Checklist Berkas (opsional)</h2>
             <p className="muted">Berkas tidak mengunci tahap Berkas maupun Closing.</p>
             {CHECKLIST_GROUPS.map((g) => (
               <div key={g.key}>
@@ -150,7 +150,7 @@ export default async function CustomerDetailPage({ params, searchParams }) {
                   return (
                     <form key={key} action={async () => { 'use server'; await toggleChecklist(c.id, key, !checked); }} style={{ margin: '4px 0' }}>
                       <button type="submit" style={{ background: 'none', border: '1px solid #c8d2c6', borderRadius: 6, padding: '4px 8px', cursor: 'pointer', textAlign: 'left', width: '100%' }}>
-                        {checked ? '☑️ ' : '⬜ '} {item}
+                        {checked ? '✓ ' : ''}{item}
                       </button>
                     </form>
                   );

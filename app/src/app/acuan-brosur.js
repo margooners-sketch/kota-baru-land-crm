@@ -3,7 +3,7 @@
 export default function AcuanBrosur() {
   return (
     <div className="card">
-      <h2>📖 Acuan Brosur TMB 2</h2>
+      <h2>Acuan Brosur TMB 2</h2>
       <p><b>Taman Melati Bulan 2 — Wonosari, Klaten.</b> Rumah 6×10 m, include pompa air (air sumur).</p>
       <ul>
         <li><b>Area Depan (pink) — All in Rp12.760.000:</b> booking Rp2.000.000, kekurangan Rp10.760.000.</li>

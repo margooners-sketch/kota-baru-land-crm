@@ -104,9 +104,9 @@ export default async function ReportsPage({ searchParams }) {
         <p className="muted">Nama, HP lengkap, tahap pipeline, follow-up, sumber. {periodLabel} — {customers.length} pelanggan.</p>
         <pre>{waPelanggan}</pre>
         <div className="row">
-          <a className="btn" href={'/api/reports/pelanggan' + q}>⬇️ Unduh PDF Daftar Pelanggan</a>
+          <a className="btn" href={'/api/reports/pelanggan' + q}>Unduh PDF Daftar Pelanggan</a>
           <ShareButton href={'/api/reports/pelanggan' + q} filename={`Laporan-Daftar-Pelanggan-${from || 'awal'}-${to || 'hari-ini'}.pdf`} />
-          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waPelanggan)} target="_blank" rel="noreferrer">💬 Kirim via WA</a>
+          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waPelanggan)} target="_blank" rel="noreferrer">Kirim via WA</a>
         </div>
       </div>
 
@@ -115,9 +115,9 @@ export default async function ReportsPage({ searchParams }) {
         <p className="muted">Nama tamu, HP lengkap, tanggal &amp; jam kunjungan, keperluan, unit. {periodLabel} — {guests.length} tamu.</p>
         <pre>{waBukutamu}</pre>
         <div className="row">
-          <a className="btn" href={'/api/reports/bukutamu' + q}>⬇️ Unduh PDF Buku Tamu</a>
+          <a className="btn" href={'/api/reports/bukutamu' + q}>Unduh PDF Buku Tamu</a>
           <ShareButton href={'/api/reports/bukutamu' + q} filename={`Laporan-Buku-Tamu-${from || 'awal'}-${to || 'hari-ini'}.pdf`} />
-          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waBukutamu)} target="_blank" rel="noreferrer">💬 Kirim via WA</a>
+          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waBukutamu)} target="_blank" rel="noreferrer">Kirim via WA</a>
         </div>
       </div>
 
@@ -126,9 +126,9 @@ export default async function ReportsPage({ searchParams }) {
         <p className="muted">Catatan flyering per tanggal + rekap per spot. {periodLabel} — {totalBrosur} brosur, {logs.length} kegiatan.</p>
         <pre>{waFlyering}</pre>
         <div className="row">
-          <a className="btn" href={'/api/reports/flyering' + q}>⬇️ Unduh PDF Flyering</a>
+          <a className="btn" href={'/api/reports/flyering' + q}>Unduh PDF Flyering</a>
           <ShareButton href={'/api/reports/flyering' + q} filename={`Laporan-Flyering-${from || 'awal'}-${to || 'hari-ini'}.pdf`} />
-          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waFlyering)} target="_blank" rel="noreferrer">💬 Kirim via WA</a>
+          <a className="wa" href={'https://wa.me/?text=' + encodeURIComponent(waFlyering)} target="_blank" rel="noreferrer">Kirim via WA</a>
         </div>
       </div>
     </div>
