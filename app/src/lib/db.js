@@ -10,6 +10,7 @@ import pg from 'pg';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { SCHEMA_PG, SCHEMA_SQLITE } from './schema-sql.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const appRoot = path.join(__dirname, '..', '..'); // src/lib -> root aplikasi
@@ -51,13 +52,15 @@ function getPool() {
 }
 
 // ---------- skema ----------
+// Skema DISEMATKAN di ./schema-sql.js (bukan dibaca dari file .sql saat runtime):
+// file db/*.sql tidak ikut terbawa ke bundle serverless Vercel, dan
+// fs.readFileSync di sana crash ENOENT saat query pertama (login).
 let schemaPromise = null;
 export function ensureSchema() {
   if (!schemaPromise) {
     schemaPromise = (async () => {
       const kind = dbKind();
-      const file = path.join(appRoot, 'db', kind === 'pg' ? 'schema.pg.sql' : 'schema.sql');
-      const sql = fs.readFileSync(file, 'utf8');
+      const sql = kind === 'pg' ? SCHEMA_PG : SCHEMA_SQLITE;
       if (kind === 'pg') await getPool().query(sql);
       else getSqlite().exec(sql);
       return kind;
