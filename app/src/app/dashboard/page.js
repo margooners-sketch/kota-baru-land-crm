@@ -21,6 +21,14 @@ export default async function DashboardPage() {
   const upcoming = customers.filter((c) => c.followUpDate && c.followUpDate > today).slice(0, 5);
   const scored = customers.map((c) => ({ c, ...leadScore(c) })).sort((a, b) => b.score - a.score);
   const noReply = customers.filter((c) => c.followUpResult && /belum|tidak ada respon|belum dibalas/i.test(c.followUpResult));
+  // Perlu Dicek — macet >7 hari: follow-up lewat lebih dari 7 hari, atau tanpa
+  // jadwal follow-up tapi sudah dikontak lebih dari 7 hari lalu (belum Akad).
+  const sevenAgo = new Date(); sevenAgo.setUTCDate(sevenAgo.getUTCDate() - 7);
+  const sevenAgoStr = sevenAgo.toISOString().slice(0, 10);
+  const stalled = customers.filter((c) => !c.stages.includes('akad') && (
+    (c.followUpDate && c.followUpDate <= sevenAgoStr) ||
+    (!c.followUpDate && c.contactDate && c.contactDate <= sevenAgoStr)
+  )).sort((a, b) => ((a.followUpDate || a.contactDate) < (b.followUpDate || b.contactDate) ? -1 : 1));
 
   return (
     <div>
@@ -50,6 +58,25 @@ export default async function DashboardPage() {
               <td><a href={'/customers/' + c.id}>{c.name}</a><br /><span className="muted">{c.phone}</span></td>
               <td>{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</td>
               <td>{formatDateId(c.followUpDate)}{c.followUpDate < today ? ' (lewat)' : ' (hari ini)'}</td>
+              <td><span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></td>
+              <td><a className="wa" href={waLink(c.phone, WA_TEMPLATES.followup(c))} target="_blank" rel="noreferrer">WA Bisnis</a></td>
+            </tr>;
+          })}</tbody>
+        </table></div>
+      )}
+
+      <h2>⚠️ Perlu Dicek — macet &gt;7 hari ({stalled.length})</h2>
+      {stalled.length === 0 ? (
+        <div className="card">Tidak ada pelanggan yang macet. 🎉</div>
+      ) : (
+        <div className="card"><table>
+          <thead><tr><th>Pelanggan</th><th>Tahap</th><th>Terakhir</th><th>Skor</th><th>WA</th></tr></thead>
+          <tbody>{stalled.map((c) => {
+            const s = leadScore(c);
+            return <tr key={c.id}>
+              <td><a href={'/customers/' + c.id}>{c.name}</a><br /><span className="muted">{c.phone}</span></td>
+              <td>{c.stages.length ? STAGE_LABELS[c.stages[c.stages.length - 1]] : 'Baru'}</td>
+              <td>{c.followUpDate ? 'Follow-up ' + formatDateId(c.followUpDate) : 'Kontak ' + formatDateId(c.contactDate)}</td>
               <td><span className={'badge ' + s.label.toLowerCase()}>{s.label} {s.score}</span></td>
               <td><a className="wa" href={waLink(c.phone, WA_TEMPLATES.followup(c))} target="_blank" rel="noreferrer">WA Bisnis</a></td>
             </tr>;

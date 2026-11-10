@@ -1,5 +1,6 @@
 import { requireUser } from '@/lib/auth';
 import { all, mapUnit } from '@/lib/db';
+import { priceScheme } from '@/lib/pricing';
 import { unitStatusLabel } from '@/lib/utils';
 
 export default async function UnitsPage({ searchParams }) {
@@ -39,7 +40,11 @@ export default async function UnitsPage({ searchParams }) {
                 ? <span className="badge hangat">Dipesan #{u.bookedByCustomerId}</span>
                 : <span className={'badge ' + (u.status === 'ready' ? 'ready' : u.status === 'soldout' ? 'sold' : u.status === 'proses' ? 'proses' : '')}>{unitStatusLabel(u.status)}</span>}
             </td>
-            <td>{u.isPromo ? <span className="badge promo">Promo</span> : '—'}</td>
+            <td>{(() => {
+              const special = priceScheme(u)?.label === 'Promo Khusus 2 Juta All In';
+              if (special) return <span className="badge special">PROMO KHUSUS: 2 Juta All in</span>;
+              return u.isPromo ? <span className="badge promo">Promo</span> : '—';
+            })()}</td>
             <td className="muted">{u.promoNotes || u.price || '—'}</td>
           </tr>
         ))}</tbody>

@@ -1,6 +1,6 @@
 import { requireUser } from '@/lib/auth';
-import { all, mapGuest, mapUnit } from '@/lib/db';
-import { addGuest } from '@/app/actions';
+import { all, mapGuest, mapUnit, mapCustomer } from '@/lib/db';
+import { addGuest, linkGuest } from '@/app/actions';
 import { formatDateId, todayId } from '@/lib/utils';
 
 const PURPOSE = { tanya_unit: 'Tanya unit', survei: 'Survei', booking: 'Booking', lainnya: 'Lainnya' };
@@ -9,6 +9,7 @@ export default async function GuestbookPage() {
   await requireUser();
   const guests = (await all('SELECT * FROM guestbook ORDER BY visit_date DESC, id DESC')).map(mapGuest);
   const units = (await all('SELECT * FROM units ORDER BY cluster, code')).map(mapUnit);
+  const customers = (await all('SELECT * FROM customers ORDER BY name')).map(mapCustomer);
 
   return (
     <div>
@@ -20,7 +21,15 @@ export default async function GuestbookPage() {
           <tr key={g.id}>
             <td>{g.guestName}</td><td>{g.phone}</td><td>{formatDateId(g.visitDate)}</td><td>{g.arrivalTime || '—'}</td>
             <td>{PURPOSE[g.purpose] || g.purpose}</td><td>{g.unitLabel || '—'}</td>
-            <td>{g.customerId ? <a href={'/customers/' + g.customerId}>#{g.customerId}</a> : '—'}</td>
+            <td>{g.customerId ? <a href={'/customers/' + g.customerId}>#{g.customerId}</a> : '—'}
+              <form action={async (fd) => { 'use server'; await linkGuest(g.id, Number(fd.get('customer_id'))); }} style={{ marginTop: 4 }}>
+                <select name="customer_id" required defaultValue="">
+                  <option value="" disabled>Tautkan ke pelanggan…</option>
+                  {customers.map((cc) => <option key={cc.id} value={cc.id}>{cc.name} ({cc.phone})</option>)}
+                </select>
+                <button className="btn small ghost" type="submit" style={{ marginTop: 4 }}>Tautkan</button>
+              </form>
+            </td>
           </tr>
         ))}</tbody>
       </table></div>

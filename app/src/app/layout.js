@@ -50,6 +50,9 @@ export default async function RootLayout({ children }) {
           .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:12px;background:#e8f2e9;color:#0d4d26}
           .badge.panas{background:#fde8e8;color:#8f1d1d} .badge.hangat{background:#fff3d6;color:#7a5b00} .badge.dingin{background:#e6eef7;color:#2b4a7a}
           .badge.promo{background:#fff3d6;color:#7a5b00} .badge.sold{background:#fde8e8;color:#8f1d1d}
+          .badge.special{background:#8f1d1d;color:#fff;font-weight:700}
+          .tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 4px} .tabs a{border:1px solid #c8d2c6;border-radius:20px;padding:6px 14px;font-size:14px;background:#fff;color:#1c2b1e}
+          .tabs a.on{background:#0d4d26;color:#fff;border-color:#0d4d26} .tabs a:hover{text-decoration:none}
           .badge.ready{background:#e8f2e9;color:#0d4d26} .badge.proses{background:#e6eef7;color:#2b4a7a}
           label{display:block;font-size:13px;color:#43513f;margin:8px 0 3px}
           input,select,textarea{width:100%;padding:8px 10px;border:1px solid #c8d2c6;border-radius:7px;font-size:14px;background:#fff}
